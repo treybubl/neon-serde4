@@ -31,7 +31,8 @@
 //! ```rust,no_run
 //! # #![allow(dead_code)]
 //! use serde::{Serialize, Deserialize};
-//! use neon_serde2 as neon_serde;
+//! use neon_serde4 as neon_serde;
+//! use neon_serde::export;
 //!
 //! use neon::prelude::*;
 //!
@@ -40,6 +41,13 @@
 //!     a: u32,
 //!     b: Vec<f64>,
 //!     c: String,
+//! }
+//!
+//! export! {
+//!     /// Say hello based on a persons name
+//!     fn say_hello(name: String) -> String {
+//!         format!("Hello, {}!", name)
+//!     }
 //! }
 //!
 //! fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
@@ -65,9 +73,6 @@
 //!         .unwrap();
 //!     Ok(js_value)
 //! }
-//!
-//! # fn main () {
-//! # }
 //!
 //! ```
 //!

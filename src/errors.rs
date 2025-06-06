@@ -124,3 +124,32 @@ impl From<neon::result::Throw> for Error {
         Error::Js { throw }
     }
 }
+
+use neon::context::Context;
+use neon::result::{NeonResult, ResultExt};
+
+impl<T> ResultExt<T> for Error {
+    fn or_throw<'a, C: Context<'a>>(self, cx: &mut C) -> NeonResult<T> {
+        use Error::*;
+        match self {
+            StringTooLong { len } => cx.throw_error(format!("string too long: {len}")),
+            UnableToCoerce { to_type } => {
+                cx.throw_type_error(format!("unable to coerce: {to_type}"))
+            }
+            EmptyString => cx.throw_error("unexpected empty string"),
+            StringTooLongForChar { len } => {
+                cx.throw_error(format!("string too long for char, length: {len}"))
+            }
+            ExpectingNull => cx.throw_type_error("expecting null"),
+            InvalidKeyType { key } => cx.throw_type_error(format!("invalid key type: {key}")),
+            ArrayIndexOutOfBounds { index, length } => cx.throw_range_error(format!(
+                "array index out of bounds: index={index}, length={length}"
+            )),
+            NotImplemented { name } => cx.throw_error(format!("not implemented: {name}")),
+            Js { throw } => Err(throw),
+            CastError => cx.throw_type_error("cast error"),
+            Serialize { msg } => cx.throw_type_error(format!("unable to serialize: {msg}")),
+            Deserialize { msg } => cx.throw_type_error(format!("unable to deserialize: {msg}")),
+        }
+    }
+}

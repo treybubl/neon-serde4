@@ -15,24 +15,29 @@ macro_rules! export {
             fn $name($( $arg: $atype ),*) -> $ret $code
         )*
 
-        register_module!(mut m, {
+        #[neon::main]
+        pub fn main(mut m: ModuleContext) -> Result<(), neon::result::Throw> {
             $(
                 m.export_function(stringify!($name), |mut cx| {
+                    use neon::result::ResultExt;
+
                     // Can be done away with a fancier macro
                     let mut _arg_index = 0;
 
                     $(
                         let $arg = cx.argument_opt(_arg_index);
-                        let $arg: $atype = $crate::from_value_opt(&mut cx, $arg)?;
+                        let $arg: $atype = $crate::from_value_opt(&mut cx, $arg)
+                            .or_else(|err| err.or_throw(&mut cx))?;
                         _arg_index += 1;
                     )*
 
                     let result = $name($( $arg ),*);
-                    let handle = $crate::to_value(&mut cx, &result)?;
+                    let handle = $crate::to_value(&mut cx, &result)
+                        .or_else(|err| err.or_throw(&mut cx))?;
                     Ok(handle)
                 })?;
             )*
             Ok(())
-        });
+        }
     )
 }
