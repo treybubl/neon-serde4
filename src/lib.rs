@@ -48,6 +48,10 @@
 //!     fn say_hello(name: String) -> String {
 //!         format!("Hello, {}!", name)
 //!     }
+//!
+//!     fn return_nothing(name: String) {
+//!         println!("Hello, {name}!");
+//!     }
 //! }
 //!
 //! fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
