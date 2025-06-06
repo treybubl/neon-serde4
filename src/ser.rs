@@ -230,12 +230,16 @@ where
     #[inline]
     fn serialize_newtype_struct<T: ?Sized>(
         self,
-        _name: &'static str,
+        #[allow(unused)] name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
+        #[cfg(feature = "chrono")]
+        if name == crate::date::CHRONO_DATE_TIME_INTERNAL_NAME {
+            return value.serialize(crate::date::DateTimeSerializer::new(self.cx));
+        }
         value.serialize(self)
     }
 

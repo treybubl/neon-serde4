@@ -85,6 +85,9 @@ pub mod de;
 pub mod errors;
 pub mod ser;
 
+#[cfg(feature = "chrono")]
+pub mod date;
+
 mod macros;
 
 pub use de::from_value;

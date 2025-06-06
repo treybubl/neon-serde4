@@ -3,6 +3,7 @@
 //!
 
 use crate::errors::{Error as LibError, Result as LibResult};
+use neon::types::JsDate;
 use neon::{prelude::*, types::buffer::TypedArray};
 use serde::{
     de::{
@@ -88,6 +89,15 @@ impl<'x, 'd, 'a, 'j, C: Context<'j>> serde::de::Deserializer<'x>
         } else if let Ok(val) = self.input.downcast::<JsArray, C>(self.cx) {
             let mut deserializer = JsArrayAccess::new(self.cx, val);
             visitor.visit_seq(&mut deserializer)
+        } else if let Ok(val) = self.input.downcast::<JsDate, C>(self.cx) {
+            let v = val.value(self.cx);
+            #[allow(clippy::float_cmp)]
+            if v.trunc() == v {
+                #[allow(clippy::cast_possible_truncation)]
+                visitor.visit_i64(v as i64)
+            } else {
+                visitor.visit_f64(v)
+            }
         } else if let Ok(val) = self.input.downcast::<JsObject, C>(self.cx) {
             let mut deserializer = JsObjectAccess::new(self.cx, val)?;
             visitor.visit_map(&mut deserializer)
